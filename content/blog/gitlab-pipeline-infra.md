@@ -1,5 +1,5 @@
 ---
-title: "[DRAFT] Streamlining Application Infrastructure: A Platform Team's Approach"
+title: "[DRAFT] Utilize GitLab Pipeline to Automate Workflow"
 # description: "How I passed the AWS Developer - Associate Certification Exam (DVA-C02)"
 dateString: July 2024
 draft: false
@@ -11,7 +11,7 @@ cover:
 
 ## Introduction
 
-As a platform team, our goal is to empower developers with easy-to-use tools for creating infrastructure. Our Internal Developer Portal offers a suite of tools to enhance developers' daily workflows. In this article, we'll focus on a key feature: onboarding an application with a single click.
+As a platform team, our goal is to empower developers with easy-to-use tools for creating infrastructure. Our Internal Developer Portal offers a suite of tools to enhance developers' daily workflows. In this article, .........................
 
 ## Background
 
