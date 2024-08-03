@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom" xmlns:content="http://purl.org/rss/1.0/modules/content/">
+  <channel>
+    <title>Developer on Riza Dev</title>
+    <link>http://localhost:1313/tags/developer/</link>
+    <description>Recent content in Developer on Riza Dev</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <language>en-us</language><atom:link href="http://localhost:1313/tags/developer/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>Streamlining Application Infrastructure: A Platform Team&#39;s Approach</title>
+      <link>http://localhost:1313/blog/gitlab-pipeline-infra/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      
+      <guid>http://localhost:1313/blog/gitlab-pipeline-infra/</guid>
+      <description>Introduction As a platform team, our goal is to empower developers with easy-to-use tools for creating infrastructure. Our Internal Developer Portal offers a suite of tools to enhance developers&amp;rsquo; daily workflows. In this article, we&amp;rsquo;ll focus on a key feature: onboarding an application with a single click.
+Background Our cloud provider is Google Cloud Platform (GCP) We use Terraform for infrastructure configuration This article focuses on VM-based applications While we won&amp;rsquo;t dive deep into the Terraform details in this article, it&amp;rsquo;s important to note that we create infrastructure by defining Terraform resources.</description>
+    </item>
+    
+  </channel>
+</rss>

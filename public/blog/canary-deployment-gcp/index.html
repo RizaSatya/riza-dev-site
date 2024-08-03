@@ -1,0 +1,541 @@
+<!DOCTYPE html>
+<html lang="en" dir="auto">
+
+<head><meta charset="utf-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+<meta name="robots" content="index, follow">
+<title>[DRAFT] Building a Canary Deployment Infrastructure in GCP | Riza Dev</title>
+<meta name="keywords" content="GCP, Terraform">
+<meta name="description" content="Introduction Let&rsquo;s face it, pushing new code to production can be nerve-wracking. One tiny bug and suddenly you&rsquo;re putting out fires instead of sipping your well-earned coffee. That&rsquo;s where canary deployments come in handy. They let you dip your toes in the water before diving in headfirst. In this article, we&rsquo;re going to walk through setting up a canary deployment system on Google Cloud Platform (GCP) using Terraform. We&rsquo;ll be working with regional managed instance groups, load balancers, and some traffic-splitting magic to get a solid canary setup going.">
+<meta name="author" content="">
+<link rel="canonical" href="https://riza.netlify.app/blog/canary-deployment-gcp/">
+<link crossorigin="anonymous" href="/assets/css/stylesheet.min.2b833c6baa7a96407c2417c7a4049985b42c21cccc2472abf4603967eafd2273.css" integrity="sha256-K4M8a6p6lkB8JBfHpASZhbQsIczMJHKr9GA5Z&#43;r9InM=" rel="preload stylesheet" as="style">
+<script defer crossorigin="anonymous" src="/assets/js/highlight.min.2eadbb982468c11a433a3e291f01326f2ba43f065e256bf792dbd79640a92316.js" integrity="sha256-Lq27mCRowRpDOj4pHwEybyukPwZeJWv3ktvXlkCpIxY="
+    onload="hljs.initHighlightingOnLoad();"></script>
+<link rel="icon" href="https://riza.netlify.app/favicon.ico">
+<link rel="icon" type="image/png" sizes="16x16" href="https://riza.netlify.app/favicon-16x16.png">
+<link rel="icon" type="image/png" sizes="32x32" href="https://riza.netlify.app/favicon-32x32.png">
+<link rel="apple-touch-icon" href="https://riza.netlify.app/apple-touch-icon.png">
+<link rel="mask-icon" href="https://riza.netlify.app/safari-pinned-tab.svg">
+<meta name="theme-color" content="#2e2e33">
+<meta name="msapplication-TileColor" content="#2e2e33">
+<link rel="alternate" hreflang="en" href="https://riza.netlify.app/blog/canary-deployment-gcp/">
+<noscript>
+    <style>
+        #theme-toggle,
+        .top-link {
+            display: none;
+        }
+
+    </style>
+    <style>
+        @media (prefers-color-scheme: dark) {
+            :root {
+                --theme: rgb(29, 30, 32);
+                --entry: rgb(46, 46, 51);
+                --primary: rgb(218, 218, 219);
+                --secondary: rgb(155, 156, 157);
+                --tertiary: rgb(65, 66, 68);
+                --content: rgb(196, 196, 197);
+                --hljs-bg: rgb(46, 46, 51);
+                --code-bg: rgb(55, 56, 62);
+                --border: rgb(51, 51, 51);
+            }
+
+            .list {
+                background: var(--theme);
+            }
+
+            .list:not(.dark)::-webkit-scrollbar-track {
+                background: 0 0;
+            }
+
+            .list:not(.dark)::-webkit-scrollbar-thumb {
+                border-color: var(--theme);
+            }
+        }
+
+    </style>
+</noscript>
+  
+
+<meta property="og:title" content="[DRAFT] Building a Canary Deployment Infrastructure in GCP" />
+<meta property="og:description" content="Introduction Let&rsquo;s face it, pushing new code to production can be nerve-wracking. One tiny bug and suddenly you&rsquo;re putting out fires instead of sipping your well-earned coffee. That&rsquo;s where canary deployments come in handy. They let you dip your toes in the water before diving in headfirst. In this article, we&rsquo;re going to walk through setting up a canary deployment system on Google Cloud Platform (GCP) using Terraform. We&rsquo;ll be working with regional managed instance groups, load balancers, and some traffic-splitting magic to get a solid canary setup going." />
+<meta property="og:type" content="article" />
+<meta property="og:url" content="https://riza.netlify.app/blog/canary-deployment-gcp/" />
+<meta property="og:image" content="https://riza.netlify.app/blog/canary-deployment-gcp/cover.png" /><meta property="article:section" content="blog" />
+
+
+
+<meta name="twitter:card" content="summary_large_image" />
+<meta name="twitter:image" content="https://riza.netlify.app/blog/canary-deployment-gcp/cover.png" />
+<meta name="twitter:title" content="[DRAFT] Building a Canary Deployment Infrastructure in GCP"/>
+<meta name="twitter:description" content="Introduction Let&rsquo;s face it, pushing new code to production can be nerve-wracking. One tiny bug and suddenly you&rsquo;re putting out fires instead of sipping your well-earned coffee. That&rsquo;s where canary deployments come in handy. They let you dip your toes in the water before diving in headfirst. In this article, we&rsquo;re going to walk through setting up a canary deployment system on Google Cloud Platform (GCP) using Terraform. We&rsquo;ll be working with regional managed instance groups, load balancers, and some traffic-splitting magic to get a solid canary setup going."/>
+
+
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BreadcrumbList",
+  "itemListElement": [
+    {
+      "@type": "ListItem",
+      "position":  1 ,
+      "name": "Blogs",
+      "item": "https://riza.netlify.app/blog/"
+    }, 
+    {
+      "@type": "ListItem",
+      "position":  2 ,
+      "name": "[DRAFT] Building a Canary Deployment Infrastructure in GCP",
+      "item": "https://riza.netlify.app/blog/canary-deployment-gcp/"
+    }
+  ]
+}
+</script>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BlogPosting",
+  "headline": "[DRAFT] Building a Canary Deployment Infrastructure in GCP",
+  "name": "[DRAFT] Building a Canary Deployment Infrastructure in GCP",
+  "description": "Introduction Let\u0026rsquo;s face it, pushing new code to production can be nerve-wracking. One tiny bug and suddenly you\u0026rsquo;re putting out fires instead of sipping your well-earned coffee. That\u0026rsquo;s where canary deployments come in handy. They let you dip your toes in the water before diving in headfirst. In this article, we\u0026rsquo;re going to walk through setting up a canary deployment system on Google Cloud Platform (GCP) using Terraform. We\u0026rsquo;ll be working with regional managed instance groups, load balancers, and some traffic-splitting magic to get a solid canary setup going.",
+  "keywords": [
+    "GCP", "Terraform"
+  ],
+  "articleBody": "Introduction Let’s face it, pushing new code to production can be nerve-wracking. One tiny bug and suddenly you’re putting out fires instead of sipping your well-earned coffee. That’s where canary deployments come in handy. They let you dip your toes in the water before diving in headfirst. In this article, we’re going to walk through setting up a canary deployment system on Google Cloud Platform (GCP) using Terraform. We’ll be working with regional managed instance groups, load balancers, and some traffic-splitting magic to get a solid canary setup going.\nWhile continuous deployment tools like Chef or Ansible are often part of a complete canary strategy, they’re outside the scope of what will be discussed here. The goal is to share insights on creating a robust infrastructure base that can support canary deployments, which can then be integrated with various deployment tools and processes.\nWhat is a Canary Deployment Canary deployment is a way to safely roll out new software versions. Instead of updating everything at once, you release the new version to a small group of users first. This lets you test the waters and catch any problems early. If everything looks good, you gradually increase the number of users getting the new version.\nLet’s take a look at the following analogy, imagine you’re a chef introducing a new recipe at your restaurant. Instead of immediately replacing your popular dish with this new recipe for all customers, you decide to take a cautious approach:\nYou prepare a small batch of the new recipe alongside your usual menu. When customers order, most get the original dish, but a small percentage (let’s say 10%) receive the new recipe. You closely watch for feedback. Are the customers who got the new dish enjoying it? Are there any complaints or allergic reactions? If the new recipe is well-received, you gradually increase the number of customers who get it, maybe to 25%, then 50%, and so on. If there are issues with the new recipe, you can quickly stop serving it and revert to the original dish for all customers, minimizing the impact. Once you’re confident the new recipe is a hit, you fully replace the old dish with the new one. This approach is essentially what a canary deployment does in software:\nThe original dish is your stable version of the software. The new recipe is your updated version. The gradual rollout to a small percentage of customers is how you introduce the new version to a subset of users. Monitoring feedback is like watching for errors or performance issues in your application. The ability to quickly revert is your safety net if something goes wrong. Just as this approach lets a chef test a new recipe without risking the satisfaction of all customers, a canary deployment allows developers to test new software versions with minimal risk to the overall user base.\nArchitecture Diagram Components HTTP Load Balancer\nForwarding Rule\nresource \"google_compute_forwarding_rule\" \"default\" { name = \"http-lb-forwarding-rule\" region = \"us-central1\" target = google_compute_region_target_http_proxy.default.id port_range = \"80\" load_balancing_scheme = \"INTERNAL_MANAGED\" network = \"default\" subnetwork = google_compute_subnetwork.proxy_only.id } HTTP Target Proxy resource \"google_compute_region_target_http_proxy\" \"default\" { name = \"http-lb-proxy\" region = \"us-central1\" url_map = google_compute_region_url_map.default.id } URL Map This is where we implement the traffic split. We use weighted_backend_services to control the distribution of requests. By setting the weight for stable to 80 and canary to 20, we ensure that 80% of the incoming traffic is directed to the stable version, while 20% goes to the canary version. This allows us to gradually expose users to the new version while maintaining the majority of traffic on the proven, stable version.\nresource \"google_compute_region_url_map\" \"default\" { name = \"url-map\" default_service = google_compute_region_backend_service.stable.id region = \"us-central1\" host_rule { hosts = [\"*\"] path_matcher = \"allpaths\" } path_matcher { name = \"allpaths\" default_service = google_compute_region_backend_service.stable.id route_rules { priority = 1 match_rules { prefix_match = \"/\" } route_action { weighted_backend_services { backend_service = google_compute_region_backend_service.stable.id weight = 80 } weighted_backend_services { backend_service = google_compute_region_backend_service.canary.id weight = 20 } } } } } Canary Instance Template resource \"google_compute_instance_template\" \"canary\" { name = \"canary-template\" machine_type = \"e2-micro\" disk { source_image = \"debian-cloud/debian-11\" auto_delete = true boot = true } network_interface { network = \"default\" access_config {} } metadata_startup_script = \u003c\u003c-EOF #!/bin/bash apt-get update apt-get install -y nginx echo \"Canary Version\" \u003e /var/www/html/index.html EOF tags = [\"http-server\"] } Canary Managed Instance Group resource \"google_compute_region_instance_group_manager\" \"canary\" { name = \"canary-mig\" base_instance_name = \"canary\" region = \"us-central1\" target_size = 1 version { instance_template = google_compute_instance_template.canary.id } named_port { name = \"http\" port = 80 } } Stable Instance Template resource \"google_compute_instance_template\" \"stable\" { name = \"stable-template\" machine_type = \"e2-micro\" disk { source_image = \"debian-cloud/debian-11\" auto_delete = true boot = true } network_interface { network = \"default\" access_config {} } metadata_startup_script = \u003c\u003c-EOF #!/bin/bash apt-get update apt-get install -y nginx echo \"Stable Version\" \u003e /var/www/html/index.html EOF tags = [\"http-server\"] } Stable Managed Instance Group resource \"google_compute_region_instance_group_manager\" \"stable\" { name = \"stable-mig\" base_instance_name = \"stable\" region = \"us-central1\" target_size = 2 version { instance_template = google_compute_instance_template.stable.id } named_port { name = \"http\" port = 80 } } DRAFT DRAFT DRAFT DRAFT DRAFT DRAFT\n",
+  "wordCount" : "852",
+  "inLanguage": "en",
+  "image":"https://riza.netlify.app/blog/canary-deployment-gcp/cover.png","datePublished": "0001-01-01T00:00:00Z",
+  "dateModified": "0001-01-01T00:00:00Z",
+  "mainEntityOfPage": {
+    "@type": "WebPage",
+    "@id": "https://riza.netlify.app/blog/canary-deployment-gcp/"
+  },
+  "publisher": {
+    "@type": "Organization",
+    "name": "Riza Dev",
+    "logo": {
+      "@type": "ImageObject",
+      "url": "https://riza.netlify.app/favicon.ico"
+    }
+  }
+}
+</script>
+</head>
+
+<body class="" id="top">
+<script>
+    if (localStorage.getItem("pref-theme") === "dark") {
+        document.body.classList.add('dark');
+    } else if (localStorage.getItem("pref-theme") === "light") {
+        document.body.classList.remove('dark')
+    } else if (window.matchMedia('(prefers-color-scheme: dark)').matches) {
+        document.body.classList.add('dark');
+    }
+
+</script>
+
+<header class="header sticky-header">
+    <nav class="nav">
+        <div class="logo">
+            <a href="https://riza.netlify.app/" accesskey="h" title="Riza Dev (Alt + H)">Riza Dev</a>
+            <span class="logo-switches">
+                <button id="theme-toggle" accesskey="t" title="(Alt + T)">
+                    <svg id="moon" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"
+                        fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                        stroke-linejoin="round">
+                        <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+                    </svg>
+                    <svg id="sun" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"
+                        fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                        stroke-linejoin="round">
+                        <circle cx="12" cy="12" r="5"></circle>
+                        <line x1="12" y1="1" x2="12" y2="3"></line>
+                        <line x1="12" y1="21" x2="12" y2="23"></line>
+                        <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+                        <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+                        <line x1="1" y1="12" x2="3" y2="12"></line>
+                        <line x1="21" y1="12" x2="23" y2="12"></line>
+                        <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+                        <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+                    </svg>
+                </button>
+                <ul class="lang-switch"><li>|</li>
+                </ul>
+            </span>
+        </div>
+        <ul id="menu">
+            <li>
+                <a href="https://riza.netlify.app/" title="Home">
+                    <span>Home</span>
+                </a>
+            </li>
+            <li>
+                <a href="https://riza.netlify.app/blog" title="Blog">
+                    <span>Blog</span>
+                </a>
+            </li>
+            <li>
+                <a href="https://riza.netlify.app/search" title="Search (Alt &#43; /)" accesskey=/>
+                    <span>Search</span>
+                </a>
+            </li>
+            <li>
+                <a href="https://riza.netlify.app/tags" title="Tags">
+                    <span>Tags</span>
+                </a>
+            </li>
+        </ul>
+    </nav>
+</header>
+<main class="main">
+
+<article class="post-single">
+  <header class="post-header">
+    <div class="breadcrumbs"><a href="https://riza.netlify.app/">Home</a>&nbsp;»&nbsp;<a href="https://riza.netlify.app/blog/">Blogs</a></div>
+    <h1 class="post-title">
+      [DRAFT] Building a Canary Deployment Infrastructure in GCP
+    </h1>
+    <div class="post-meta">
+
+
+July 2024
+
+</div>
+  </header> 
+<figure class="entry-cover"><img loading="lazy" src="https://riza.netlify.app/blog/canary-deployment-gcp/cover.png" alt="">
+        
+</figure><div class="toc">
+    <details  open>
+        <summary accesskey="c" title="(Alt + C)">
+            <span class="details">‎ Table of Contents</span>
+        </summary>
+
+        <div class="inner"><ul>
+                <li>
+                    <a href="#introduction" aria-label="Introduction">Introduction</a></li>
+                <li>
+                    <a href="#what-is-a-canary-deployment" aria-label="What is a Canary Deployment">What is a Canary Deployment</a></li>
+                <li>
+                    <a href="#architecture-diagram" aria-label="Architecture Diagram">Architecture Diagram</a></li>
+                <li>
+                    <a href="#components" aria-label="Components">Components</a>
+                </li>
+            </ul>
+        </div>
+    </details>
+</div>
+
+  <div class="post-content"><h1 id="introduction">Introduction<a hidden class="anchor" aria-hidden="true" href="#introduction">#</a></h1>
+<p>Let&rsquo;s face it, pushing new code to production can be nerve-wracking. One tiny bug and suddenly you&rsquo;re putting out fires instead of sipping your well-earned coffee. That&rsquo;s where canary deployments come in handy. They let you dip your toes in the water before diving in headfirst.
+In this article, we&rsquo;re going to walk through setting up a canary deployment system on Google Cloud Platform (GCP) using Terraform. We&rsquo;ll be working with regional managed instance groups, load balancers, and some traffic-splitting magic to get a solid canary setup going.</p>
+<p>While continuous deployment tools like Chef or Ansible are often part of a complete canary strategy, they&rsquo;re outside the scope of what will be discussed here. The goal is to share insights on creating a robust infrastructure base that can support canary deployments, which can then be integrated with various deployment tools and processes.</p>
+<h1 id="what-is-a-canary-deployment">What is a Canary Deployment<a hidden class="anchor" aria-hidden="true" href="#what-is-a-canary-deployment">#</a></h1>
+<p>Canary deployment is a way to safely roll out new software versions. Instead of updating everything at once, you release the new version to a small group of users first. This lets you test the waters and catch any problems early. If everything looks good, you gradually increase the number of users getting the new version.</p>
+<p>Let&rsquo;s take a look at the following analogy, imagine you&rsquo;re a chef introducing a new recipe at your restaurant. Instead of immediately replacing your popular dish with this new recipe for all customers, you decide to take a cautious approach:</p>
+<ol>
+<li>You prepare a small batch of the new recipe alongside your usual menu.</li>
+<li>When customers order, most get the original dish, but a small percentage (let&rsquo;s say 10%) receive the new recipe.</li>
+<li>You closely watch for feedback. Are the customers who got the new dish enjoying it? Are there any complaints or allergic reactions?</li>
+<li>If the new recipe is well-received, you gradually increase the number of customers who get it, maybe to 25%, then 50%, and so on.</li>
+<li>If there are issues with the new recipe, you can quickly stop serving it and revert to the original dish for all customers, minimizing the impact.</li>
+<li>Once you&rsquo;re confident the new recipe is a hit, you fully replace the old dish with the new one.</li>
+</ol>
+<p>This approach is essentially what a canary deployment does in software:</p>
+<ul>
+<li>The original dish is your stable version of the software.</li>
+<li>The new recipe is your updated version.</li>
+<li>The gradual rollout to a small percentage of customers is how you introduce the new version to a subset of users.</li>
+<li>Monitoring feedback is like watching for errors or performance issues in your application.</li>
+<li>The ability to quickly revert is your safety net if something goes wrong.</li>
+</ul>
+<p>Just as this approach lets a chef test a new recipe without risking the satisfaction of all customers, a canary deployment allows developers to test new software versions with minimal risk to the overall user base.</p>
+<h1 id="architecture-diagram">Architecture Diagram<a hidden class="anchor" aria-hidden="true" href="#architecture-diagram">#</a></h1>
+<p><img loading="lazy" src="/blog/canary-deployment-gcp/img1.png" alt=""  />
+</p>
+<h1 id="components">Components<a hidden class="anchor" aria-hidden="true" href="#components">#</a></h1>
+<ul>
+<li>
+<p>HTTP Load Balancer</p>
+</li>
+<li>
+<p>Forwarding Rule</p>
+</li>
+</ul>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-terraform" data-lang="terraform"><span style="display:flex;"><span><span style="color:#66d9ef">resource</span> <span style="color:#e6db74">&#34;google_compute_forwarding_rule&#34;</span> <span style="color:#e6db74">&#34;default&#34;</span> {
+</span></span><span style="display:flex;"><span>  <span style="color:#a6e22e">name</span>                  = <span style="color:#e6db74">&#34;http-lb-forwarding-rule&#34;</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#a6e22e">region</span>                = <span style="color:#e6db74">&#34;us-central1&#34;</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#a6e22e">target</span>                = <span style="color:#a6e22e">google_compute_region_target_http_proxy</span>.<span style="color:#a6e22e">default</span>.<span style="color:#a6e22e">id</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#a6e22e">port_range</span>            = <span style="color:#e6db74">&#34;80&#34;</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#a6e22e">load_balancing_scheme</span> = <span style="color:#e6db74">&#34;INTERNAL_MANAGED&#34;</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#a6e22e">network</span>               = <span style="color:#e6db74">&#34;default&#34;</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#a6e22e">subnetwork</span>            = <span style="color:#a6e22e">google_compute_subnetwork</span>.<span style="color:#a6e22e">proxy_only</span>.<span style="color:#a6e22e">id</span>
+</span></span><span style="display:flex;"><span>}
+</span></span></code></pre></div><ul>
+<li>HTTP Target Proxy</li>
+</ul>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-terraform" data-lang="terraform"><span style="display:flex;"><span><span style="color:#66d9ef">resource</span> <span style="color:#e6db74">&#34;google_compute_region_target_http_proxy&#34;</span> <span style="color:#e6db74">&#34;default&#34;</span> {
+</span></span><span style="display:flex;"><span>  <span style="color:#a6e22e">name</span>    = <span style="color:#e6db74">&#34;http-lb-proxy&#34;</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#a6e22e">region</span>  = <span style="color:#e6db74">&#34;us-central1&#34;</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#a6e22e">url_map</span> = <span style="color:#a6e22e">google_compute_region_url_map</span>.<span style="color:#a6e22e">default</span>.<span style="color:#a6e22e">id</span>
+</span></span><span style="display:flex;"><span>}
+</span></span></code></pre></div><ul>
+<li>URL Map</li>
+</ul>
+<p>This is where we implement the traffic split. We use weighted_backend_services to control the distribution of requests. By setting the weight for stable to 80 and canary to 20, we ensure that 80% of the incoming traffic is directed to the stable version, while 20% goes to the canary version. This allows us to gradually expose users to the new version while maintaining the majority of traffic on the proven, stable version.</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-terraform" data-lang="terraform"><span style="display:flex;"><span><span style="color:#66d9ef">resource</span> <span style="color:#e6db74">&#34;google_compute_region_url_map&#34;</span> <span style="color:#e6db74">&#34;default&#34;</span> {
+</span></span><span style="display:flex;"><span>  <span style="color:#a6e22e">name</span>            = <span style="color:#e6db74">&#34;url-map&#34;</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#a6e22e">default_service</span> = <span style="color:#a6e22e">google_compute_region_backend_service</span>.<span style="color:#a6e22e">stable</span>.<span style="color:#a6e22e">id</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#a6e22e">region</span>          = <span style="color:#e6db74">&#34;us-central1&#34;</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>  <span style="color:#a6e22e">host_rule</span> {
+</span></span><span style="display:flex;"><span>    <span style="color:#a6e22e">hosts</span>        = [<span style="color:#e6db74">&#34;*&#34;</span>]
+</span></span><span style="display:flex;"><span>    <span style="color:#a6e22e">path_matcher</span> = <span style="color:#e6db74">&#34;allpaths&#34;</span>
+</span></span><span style="display:flex;"><span>  }
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>  <span style="color:#a6e22e">path_matcher</span> {
+</span></span><span style="display:flex;"><span>    <span style="color:#a6e22e">name</span>            = <span style="color:#e6db74">&#34;allpaths&#34;</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#a6e22e">default_service</span> = <span style="color:#a6e22e">google_compute_region_backend_service</span>.<span style="color:#a6e22e">stable</span>.<span style="color:#a6e22e">id</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    <span style="color:#a6e22e">route_rules</span> {
+</span></span><span style="display:flex;"><span>      <span style="color:#a6e22e">priority</span> = <span style="color:#ae81ff">1</span>
+</span></span><span style="display:flex;"><span>      <span style="color:#a6e22e">match_rules</span> {
+</span></span><span style="display:flex;"><span>        <span style="color:#a6e22e">prefix_match</span> = <span style="color:#e6db74">&#34;/&#34;</span>
+</span></span><span style="display:flex;"><span>      }
+</span></span><span style="display:flex;"><span>      <span style="color:#a6e22e">route_action</span> {
+</span></span><span style="display:flex;"><span>        <span style="color:#a6e22e">weighted_backend_services</span> {
+</span></span><span style="display:flex;"><span>          <span style="color:#a6e22e">backend_service</span> = <span style="color:#a6e22e">google_compute_region_backend_service</span>.<span style="color:#a6e22e">stable</span>.<span style="color:#a6e22e">id</span>
+</span></span><span style="display:flex;"><span>          <span style="color:#a6e22e">weight</span>          = <span style="color:#ae81ff">80</span>
+</span></span><span style="display:flex;"><span>        }
+</span></span><span style="display:flex;"><span>        <span style="color:#a6e22e">weighted_backend_services</span> {
+</span></span><span style="display:flex;"><span>          <span style="color:#a6e22e">backend_service</span> = <span style="color:#a6e22e">google_compute_region_backend_service</span>.<span style="color:#a6e22e">canary</span>.<span style="color:#a6e22e">id</span>
+</span></span><span style="display:flex;"><span>          <span style="color:#a6e22e">weight</span>          = <span style="color:#ae81ff">20</span>
+</span></span><span style="display:flex;"><span>        }
+</span></span><span style="display:flex;"><span>      }
+</span></span><span style="display:flex;"><span>    }
+</span></span><span style="display:flex;"><span>  }
+</span></span><span style="display:flex;"><span>}
+</span></span></code></pre></div><ul>
+<li>Canary Instance Template</li>
+</ul>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-terraform" data-lang="terraform"><span style="display:flex;"><span><span style="color:#66d9ef">resource</span> <span style="color:#e6db74">&#34;google_compute_instance_template&#34;</span> <span style="color:#e6db74">&#34;canary&#34;</span> {
+</span></span><span style="display:flex;"><span>  <span style="color:#a6e22e">name</span>         = <span style="color:#e6db74">&#34;canary-template&#34;</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#a6e22e">machine_type</span> = <span style="color:#e6db74">&#34;e2-micro&#34;</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>  <span style="color:#a6e22e">disk</span> {
+</span></span><span style="display:flex;"><span>    <span style="color:#a6e22e">source_image</span> = <span style="color:#e6db74">&#34;debian-cloud/debian-11&#34;</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#a6e22e">auto_delete</span>  = <span style="color:#66d9ef">true</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#a6e22e">boot</span>         = <span style="color:#66d9ef">true</span>
+</span></span><span style="display:flex;"><span>  }
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>  <span style="color:#a6e22e">network_interface</span> {
+</span></span><span style="display:flex;"><span>    <span style="color:#a6e22e">network</span> = <span style="color:#e6db74">&#34;default&#34;</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#a6e22e">access_config</span> {}
+</span></span><span style="display:flex;"><span>  }
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>  <span style="color:#a6e22e">metadata_startup_script</span> = <span style="color:#f92672">&lt;&lt;-EOF</span><span style="color:#e6db74">
+</span></span></span><span style="display:flex;"><span><span style="color:#e6db74">    #!/bin/bash
+</span></span></span><span style="display:flex;"><span><span style="color:#e6db74">    apt-get update
+</span></span></span><span style="display:flex;"><span><span style="color:#e6db74">    apt-get install -y nginx
+</span></span></span><span style="display:flex;"><span><span style="color:#e6db74">    echo &#34;Canary Version&#34; &gt; /var/www/html/index.html
+</span></span></span><span style="display:flex;"><span><span style="color:#e6db74">  </span><span style="color:#f92672">EOF</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>  <span style="color:#a6e22e">tags</span> = [<span style="color:#e6db74">&#34;http-server&#34;</span>]
+</span></span><span style="display:flex;"><span>}
+</span></span></code></pre></div><ul>
+<li>Canary Managed Instance Group</li>
+</ul>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-terraform" data-lang="terraform"><span style="display:flex;"><span><span style="color:#66d9ef">resource</span> <span style="color:#e6db74">&#34;google_compute_region_instance_group_manager&#34;</span> <span style="color:#e6db74">&#34;canary&#34;</span> {
+</span></span><span style="display:flex;"><span>  <span style="color:#a6e22e">name</span>               = <span style="color:#e6db74">&#34;canary-mig&#34;</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#a6e22e">base_instance_name</span> = <span style="color:#e6db74">&#34;canary&#34;</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#a6e22e">region</span>             = <span style="color:#e6db74">&#34;us-central1&#34;</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#a6e22e">target_size</span>        = <span style="color:#ae81ff">1</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>  <span style="color:#a6e22e">version</span> {
+</span></span><span style="display:flex;"><span>    <span style="color:#a6e22e">instance_template</span> = <span style="color:#a6e22e">google_compute_instance_template</span>.<span style="color:#a6e22e">canary</span>.<span style="color:#a6e22e">id</span>
+</span></span><span style="display:flex;"><span>  }
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>  <span style="color:#a6e22e">named_port</span> {
+</span></span><span style="display:flex;"><span>    <span style="color:#a6e22e">name</span> = <span style="color:#e6db74">&#34;http&#34;</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#a6e22e">port</span> = <span style="color:#ae81ff">80</span>
+</span></span><span style="display:flex;"><span>  }
+</span></span><span style="display:flex;"><span>}
+</span></span></code></pre></div><ul>
+<li>Stable Instance Template</li>
+</ul>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-terraform" data-lang="terraform"><span style="display:flex;"><span><span style="color:#66d9ef">resource</span> <span style="color:#e6db74">&#34;google_compute_instance_template&#34;</span> <span style="color:#e6db74">&#34;stable&#34;</span> {
+</span></span><span style="display:flex;"><span>  <span style="color:#a6e22e">name</span>         = <span style="color:#e6db74">&#34;stable-template&#34;</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#a6e22e">machine_type</span> = <span style="color:#e6db74">&#34;e2-micro&#34;</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>  <span style="color:#a6e22e">disk</span> {
+</span></span><span style="display:flex;"><span>    <span style="color:#a6e22e">source_image</span> = <span style="color:#e6db74">&#34;debian-cloud/debian-11&#34;</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#a6e22e">auto_delete</span>  = <span style="color:#66d9ef">true</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#a6e22e">boot</span>         = <span style="color:#66d9ef">true</span>
+</span></span><span style="display:flex;"><span>  }
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>  <span style="color:#a6e22e">network_interface</span> {
+</span></span><span style="display:flex;"><span>    <span style="color:#a6e22e">network</span> = <span style="color:#e6db74">&#34;default&#34;</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#a6e22e">access_config</span> {}
+</span></span><span style="display:flex;"><span>  }
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>  <span style="color:#a6e22e">metadata_startup_script</span> = <span style="color:#f92672">&lt;&lt;-EOF</span><span style="color:#e6db74">
+</span></span></span><span style="display:flex;"><span><span style="color:#e6db74">    #!/bin/bash
+</span></span></span><span style="display:flex;"><span><span style="color:#e6db74">    apt-get update
+</span></span></span><span style="display:flex;"><span><span style="color:#e6db74">    apt-get install -y nginx
+</span></span></span><span style="display:flex;"><span><span style="color:#e6db74">    echo &#34;Stable Version&#34; &gt; /var/www/html/index.html
+</span></span></span><span style="display:flex;"><span><span style="color:#e6db74">  </span><span style="color:#f92672">EOF</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>  <span style="color:#a6e22e">tags</span> = [<span style="color:#e6db74">&#34;http-server&#34;</span>]
+</span></span><span style="display:flex;"><span>}
+</span></span></code></pre></div><ul>
+<li>Stable Managed Instance Group</li>
+</ul>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-terraform" data-lang="terraform"><span style="display:flex;"><span><span style="color:#66d9ef">resource</span> <span style="color:#e6db74">&#34;google_compute_region_instance_group_manager&#34;</span> <span style="color:#e6db74">&#34;stable&#34;</span> {
+</span></span><span style="display:flex;"><span>  <span style="color:#a6e22e">name</span>               = <span style="color:#e6db74">&#34;stable-mig&#34;</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#a6e22e">base_instance_name</span> = <span style="color:#e6db74">&#34;stable&#34;</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#a6e22e">region</span>             = <span style="color:#e6db74">&#34;us-central1&#34;</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#a6e22e">target_size</span>        = <span style="color:#ae81ff">2</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>  <span style="color:#a6e22e">version</span> {
+</span></span><span style="display:flex;"><span>    <span style="color:#a6e22e">instance_template</span> = <span style="color:#a6e22e">google_compute_instance_template</span>.<span style="color:#a6e22e">stable</span>.<span style="color:#a6e22e">id</span>
+</span></span><span style="display:flex;"><span>  }
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>  <span style="color:#a6e22e">named_port</span> {
+</span></span><span style="display:flex;"><span>    <span style="color:#a6e22e">name</span> = <span style="color:#e6db74">&#34;http&#34;</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#a6e22e">port</span> = <span style="color:#ae81ff">80</span>
+</span></span><span style="display:flex;"><span>  }
+</span></span><span style="display:flex;"><span>}
+</span></span></code></pre></div><p>DRAFT
+DRAFT
+DRAFT
+DRAFT
+DRAFT
+DRAFT</p>
+
+
+  </div>
+
+  <footer class="post-footer">
+    <ul class="post-tags">
+      <li><a href="https://riza.netlify.app/tags/gcp/">GCP</a></li>
+      <li><a href="https://riza.netlify.app/tags/terraform/">Terraform</a></li>
+    </ul>
+  </footer>
+</article>
+    </main>
+    
+<footer class="footer">
+    <span>&copy; 2024 <a href="https://riza.netlify.app/">Riza Dev</a></span>
+</footer>
+<a href="#top" aria-label="go to top" title="Go to Top (Alt + G)" class="top-link" id="top-link" accesskey="g">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 12 6" fill="currentColor">
+        <path d="M12 6H0l6-6z" />
+    </svg>
+</a>
+
+<script>
+    let menu = document.getElementById('menu')
+    if (menu) {
+        menu.scrollLeft = localStorage.getItem("menu-scroll-position");
+        menu.onscroll = function () {
+            localStorage.setItem("menu-scroll-position", menu.scrollLeft);
+        }
+    }
+
+    document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+        anchor.addEventListener("click", function (e) {
+            e.preventDefault();
+            var id = this.getAttribute("href").substr(1);
+            if (!window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+                document.querySelector(`[id='${decodeURIComponent(id)}']`).scrollIntoView({
+                    behavior: "smooth"
+                });
+            } else {
+                document.querySelector(`[id='${decodeURIComponent(id)}']`).scrollIntoView();
+            }
+            if (id === "top") {
+                history.replaceState(null, null, " ");
+            } else {
+                history.pushState(null, null, `#${id}`);
+            }
+        });
+    });
+
+</script>
+<script>
+    var mybutton = document.getElementById("top-link");
+    window.onscroll = function () {
+        if (document.body.scrollTop > 800 || document.documentElement.scrollTop > 800) {
+            mybutton.style.visibility = "visible";
+            mybutton.style.opacity = "1";
+        } else {
+            mybutton.style.visibility = "hidden";
+            mybutton.style.opacity = "0";
+        }
+    };
+
+</script>
+<script>
+    document.getElementById("theme-toggle").addEventListener("click", () => {
+        if (document.body.className.includes("dark")) {
+            document.body.classList.remove('dark');
+            localStorage.setItem("pref-theme", 'light');
+        } else {
+            document.body.classList.add('dark');
+            localStorage.setItem("pref-theme", 'dark');
+        }
+    })
+
+</script>
+<script>
+    document.querySelectorAll('pre > code').forEach((codeblock) => {
+        const container = codeblock.parentNode.parentNode;
+
+        const copybutton = document.createElement('button');
+        copybutton.classList.add('copy-code');
+        copybutton.innerHTML = 'copy';
+
+        function copyingDone() {
+            copybutton.innerHTML = 'copied!';
+            setTimeout(() => {
+                copybutton.innerHTML = 'copy';
+            }, 2000);
+        }
+
+        copybutton.addEventListener('click', (cb) => {
+            if ('clipboard' in navigator) {
+                navigator.clipboard.writeText(codeblock.textContent);
+                copyingDone();
+                return;
+            }
+
+            const range = document.createRange();
+            range.selectNodeContents(codeblock);
+            const selection = window.getSelection();
+            selection.removeAllRanges();
+            selection.addRange(range);
+            try {
+                document.execCommand('copy');
+                copyingDone();
+            } catch (e) { };
+            selection.removeRange(range);
+        });
+
+        if (container.classList.contains("highlight")) {
+            container.appendChild(copybutton);
+        } else if (container.parentNode.firstChild == container) {
+            
+        } else if (codeblock.parentNode.parentNode.parentNode.parentNode.parentNode.nodeName == "TABLE") {
+            
+            codeblock.parentNode.parentNode.parentNode.parentNode.parentNode.appendChild(copybutton);
+        } else {
+            
+            codeblock.parentNode.appendChild(copybutton);
+        }
+    });
+</script>
+</body>
+
+</html>

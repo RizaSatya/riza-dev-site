@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
+  xmlns:xhtml="http://www.w3.org/1999/xhtml">
+  <url>
+    <loc>https://riza.netlify.app/blog/canary-deployment-gcp/</loc>
+  </url><url>
+    <loc>https://riza.netlify.app/blog/gitlab-pipeline-infra/</loc>
+  </url><url>
+    <loc>https://riza.netlify.app/blog/dev-platform/</loc>
+  </url><url>
+    <loc>https://riza.netlify.app/blog/iac/</loc>
+  </url><url>
+    <loc>https://riza.netlify.app/blog/</loc>
+  </url><url>
+    <loc>https://riza.netlify.app/categories/</loc>
+  </url><url>
+    <loc>https://riza.netlify.app/tags/gcp/</loc>
+  </url><url>
+    <loc>https://riza.netlify.app/tags/gitlab/</loc>
+  </url><url>
+    <loc>https://riza.netlify.app/tags/iac/</loc>
+  </url><url>
+    <loc>https://riza.netlify.app/tags/pipeline/</loc>
+  </url><url>
+    <loc>https://riza.netlify.app/</loc>
+  </url><url>
+    <loc>https://riza.netlify.app/search/</loc>
+  </url><url>
+    <loc>https://riza.netlify.app/tags/</loc>
+  </url><url>
+    <loc>https://riza.netlify.app/tags/terraform/</loc>
+  </url>
+</urlset>

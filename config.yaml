@@ -1,0 +1,100 @@
+baseURL: "https://riza.netlify.app"
+languageCode: en-us
+title: Riza Dev
+theme: PaperMod
+
+menu:
+  main:
+    - identifier: home
+      name: Home
+      url: /
+      weight: 10
+    - identifier: blog
+      name: Blog
+      url: /blog
+      weight: 20
+    # - identifier: projects
+    #   name: Projects
+    #   url: /projects
+    #   weight: 30
+    # - identifier: travel
+    #   name: Travel
+    #   url: /travel
+    #   weight: 30
+    # - identifier: experience
+    #   name: Experience
+    #   url: /experience
+    #   weight: 40
+    - identifier: search
+      name: Search
+      url: /search
+      weight: 50
+    - identifier: tags
+      name: Tags
+      url: /tags
+      weight: 60
+
+params:
+  # theme
+  showToc: true
+  TocOpen: true
+  ShowBreadCrumbs: true
+  ShowCodeCopyButtons: true
+  hideMeta: false
+
+  # for enchanced SEO
+  env: production
+
+  # Home Page
+  profileMode:
+    enabled: true
+    title: "Riza Ega Satyabudhi"
+    subtitle: Hi 👋 I'm Riza, a senior software engineer bla bla bla bla.....
+    # subtitle: Hi 👋 I'm Riza, a senior software engineer specializing in cloud platform and DevOps, with 5 years of experience spanning frontend and backend development. Last couple of years, my recent focus has been on platform engineering, where I build and optimize scalable infrastructure to support seamless deployments and efficient operations. My work involves automating processes, improving CI/CD pipelines, and enhancing cloud integrations to empower development teams. Outside of work, I enjoy traveling and photography, capturing the world's beauty through my lens and experiencing new cultures.
+
+ 
+    # imageUrl: "home/casual-small-square.jpeg"
+    imageWidth: 220
+    imageHeight: 220
+    # buttons:
+    #   - name: Resume
+    #     url: ""
+
+  # List View
+  hideDescriptionInList: false
+
+  # cover image for posts
+  cover:
+    hiddenInList: false # hide on list pages and home
+    hiddenInSingle: false # hide on single page
+
+  socialIcons:
+    - name: "email"
+      url: "mailto:rizasatya@gmail.com"
+    - name: "linkedin"
+      url: "https://www.linkedin.com/in/rizasatyabudhi/"
+    # - name: "github"
+    #   url: "https://github.com/arkalim"
+
+  # text search
+  fuseOpts:
+    isCaseSensitive: false
+    shouldSort: true
+    location: 0
+    distance: 1000
+    threshold: 0.4
+    minMatchCharLength: 0
+    keys: ["title", "permalink", "summary", "content"]
+
+# for search using Fuse.js
+outputs:
+  home:
+    - HTML
+    - RSS
+    - JSON
+
+# allow HTML in MD
+markup:
+  goldmark:
+    renderer:
+      unsafe: true

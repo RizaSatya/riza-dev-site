@@ -1,0 +1,452 @@
+<!DOCTYPE html>
+<html lang="en" dir="auto">
+
+<head><meta charset="utf-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+<meta name="robots" content="index, follow">
+<title>[DRAFT] Streamlining Application Infrastructure: A Platform Team&#39;s Approach | Riza Dev</title>
+<meta name="keywords" content="GitLab, pipeline, GCP">
+<meta name="description" content="Introduction As a platform team, our goal is to empower developers with easy-to-use tools for creating infrastructure. Our Internal Developer Portal offers a suite of tools to enhance developers&rsquo; daily workflows. In this article, we&rsquo;ll focus on a key feature: onboarding an application with a single click.
+Background Our cloud provider is Google Cloud Platform (GCP) We use Terraform for infrastructure configuration This article focuses on VM-based applications While we won&rsquo;t dive deep into the Terraform details in this article, it&rsquo;s important to note that we create infrastructure by defining Terraform resources.">
+<meta name="author" content="">
+<link rel="canonical" href="https://riza.netlify.app/blog/gitlab-pipeline-infra/">
+<link crossorigin="anonymous" href="/assets/css/stylesheet.min.2b833c6baa7a96407c2417c7a4049985b42c21cccc2472abf4603967eafd2273.css" integrity="sha256-K4M8a6p6lkB8JBfHpASZhbQsIczMJHKr9GA5Z&#43;r9InM=" rel="preload stylesheet" as="style">
+<script defer crossorigin="anonymous" src="/assets/js/highlight.min.2eadbb982468c11a433a3e291f01326f2ba43f065e256bf792dbd79640a92316.js" integrity="sha256-Lq27mCRowRpDOj4pHwEybyukPwZeJWv3ktvXlkCpIxY="
+    onload="hljs.initHighlightingOnLoad();"></script>
+<link rel="icon" href="https://riza.netlify.app/favicon.ico">
+<link rel="icon" type="image/png" sizes="16x16" href="https://riza.netlify.app/favicon-16x16.png">
+<link rel="icon" type="image/png" sizes="32x32" href="https://riza.netlify.app/favicon-32x32.png">
+<link rel="apple-touch-icon" href="https://riza.netlify.app/apple-touch-icon.png">
+<link rel="mask-icon" href="https://riza.netlify.app/safari-pinned-tab.svg">
+<meta name="theme-color" content="#2e2e33">
+<meta name="msapplication-TileColor" content="#2e2e33">
+<link rel="alternate" hreflang="en" href="https://riza.netlify.app/blog/gitlab-pipeline-infra/">
+<noscript>
+    <style>
+        #theme-toggle,
+        .top-link {
+            display: none;
+        }
+
+    </style>
+    <style>
+        @media (prefers-color-scheme: dark) {
+            :root {
+                --theme: rgb(29, 30, 32);
+                --entry: rgb(46, 46, 51);
+                --primary: rgb(218, 218, 219);
+                --secondary: rgb(155, 156, 157);
+                --tertiary: rgb(65, 66, 68);
+                --content: rgb(196, 196, 197);
+                --hljs-bg: rgb(46, 46, 51);
+                --code-bg: rgb(55, 56, 62);
+                --border: rgb(51, 51, 51);
+            }
+
+            .list {
+                background: var(--theme);
+            }
+
+            .list:not(.dark)::-webkit-scrollbar-track {
+                background: 0 0;
+            }
+
+            .list:not(.dark)::-webkit-scrollbar-thumb {
+                border-color: var(--theme);
+            }
+        }
+
+    </style>
+</noscript>
+  
+
+<meta property="og:title" content="[DRAFT] Streamlining Application Infrastructure: A Platform Team&#39;s Approach" />
+<meta property="og:description" content="Introduction As a platform team, our goal is to empower developers with easy-to-use tools for creating infrastructure. Our Internal Developer Portal offers a suite of tools to enhance developers&rsquo; daily workflows. In this article, we&rsquo;ll focus on a key feature: onboarding an application with a single click.
+Background Our cloud provider is Google Cloud Platform (GCP) We use Terraform for infrastructure configuration This article focuses on VM-based applications While we won&rsquo;t dive deep into the Terraform details in this article, it&rsquo;s important to note that we create infrastructure by defining Terraform resources." />
+<meta property="og:type" content="article" />
+<meta property="og:url" content="https://riza.netlify.app/blog/gitlab-pipeline-infra/" />
+<meta property="og:image" content="https://riza.netlify.app/blog/gitlab-pipeline-infra/cover.png" /><meta property="article:section" content="blog" />
+
+
+
+<meta name="twitter:card" content="summary_large_image" />
+<meta name="twitter:image" content="https://riza.netlify.app/blog/gitlab-pipeline-infra/cover.png" />
+<meta name="twitter:title" content="[DRAFT] Streamlining Application Infrastructure: A Platform Team&#39;s Approach"/>
+<meta name="twitter:description" content="Introduction As a platform team, our goal is to empower developers with easy-to-use tools for creating infrastructure. Our Internal Developer Portal offers a suite of tools to enhance developers&rsquo; daily workflows. In this article, we&rsquo;ll focus on a key feature: onboarding an application with a single click.
+Background Our cloud provider is Google Cloud Platform (GCP) We use Terraform for infrastructure configuration This article focuses on VM-based applications While we won&rsquo;t dive deep into the Terraform details in this article, it&rsquo;s important to note that we create infrastructure by defining Terraform resources."/>
+
+
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BreadcrumbList",
+  "itemListElement": [
+    {
+      "@type": "ListItem",
+      "position":  1 ,
+      "name": "Blogs",
+      "item": "https://riza.netlify.app/blog/"
+    }, 
+    {
+      "@type": "ListItem",
+      "position":  2 ,
+      "name": "[DRAFT] Streamlining Application Infrastructure: A Platform Team's Approach",
+      "item": "https://riza.netlify.app/blog/gitlab-pipeline-infra/"
+    }
+  ]
+}
+</script>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BlogPosting",
+  "headline": "[DRAFT] Streamlining Application Infrastructure: A Platform Team's Approach",
+  "name": "[DRAFT] Streamlining Application Infrastructure: A Platform Team\u0027s Approach",
+  "description": "Introduction As a platform team, our goal is to empower developers with easy-to-use tools for creating infrastructure. Our Internal Developer Portal offers a suite of tools to enhance developers\u0026rsquo; daily workflows. In this article, we\u0026rsquo;ll focus on a key feature: onboarding an application with a single click.\nBackground Our cloud provider is Google Cloud Platform (GCP) We use Terraform for infrastructure configuration This article focuses on VM-based applications While we won\u0026rsquo;t dive deep into the Terraform details in this article, it\u0026rsquo;s important to note that we create infrastructure by defining Terraform resources.",
+  "keywords": [
+    "GitLab", "pipeline", "GCP"
+  ],
+  "articleBody": "Introduction As a platform team, our goal is to empower developers with easy-to-use tools for creating infrastructure. Our Internal Developer Portal offers a suite of tools to enhance developers’ daily workflows. In this article, we’ll focus on a key feature: onboarding an application with a single click.\nBackground Our cloud provider is Google Cloud Platform (GCP) We use Terraform for infrastructure configuration This article focuses on VM-based applications While we won’t dive deep into the Terraform details in this article, it’s important to note that we create infrastructure by defining Terraform resources.\nBase Infrastructure Components For each application, we define the following base infrastructure:\nService Account Instance Template Instance Group Backend Service URL Map The Onboarding Process Step 1: User Input Users begin by filling out a form in our Developer Portal, providing:\nApplication name Instance template configurations: Machine type Disk size Ubuntu image version Instance group configurations: Maximum replicas Minimum replicas Step 2: Pipeline Trigger Upon form submission, we trigger a GitLab pipeline using GitLab’s trigger API. This process involves the following:\nPrerequisites Before triggering the pipeline, we need to generate a trigger token. This can be done using the GitLab API for creating trigger token. For more information, refer to the GitLab documentation on creating trigger tokens.\nTriggering the Pipeline We use a cURL command to trigger the pipeline:\ncurl --request POST \\ \"https://gitlab.example.com/api/v4/projects//trigger/pipeline?token=\u0026ref=\" Where:\nis your trigger token is a branch or tag name (e.g., main) is your project ID (e.g., 123456), which can be found on the repository page Passing User Input We pass the user-provided values in the request body as a JSON object. Our script later parses this JSON to extract the necessary information.\nPipeline Actions Once triggered, the pipeline:\nManages the state of base infrastructure creation Raises a Merge Request (MR) to our Infrastructure as Code (IaC) repository Step 3: Automated Resource Creation Our pipeline includes a script that:\nRaises the MR to GitLab Creates resources in a defined sequence Automates the entire process The script creates the resources in sequence, and the entire process is automated within the pipeline.\nDRAFT DRAFT DRAFT DRAFT DRAFT DRAFT\n",
+  "wordCount" : "356",
+  "inLanguage": "en",
+  "image":"https://riza.netlify.app/blog/gitlab-pipeline-infra/cover.png","datePublished": "0001-01-01T00:00:00Z",
+  "dateModified": "0001-01-01T00:00:00Z",
+  "mainEntityOfPage": {
+    "@type": "WebPage",
+    "@id": "https://riza.netlify.app/blog/gitlab-pipeline-infra/"
+  },
+  "publisher": {
+    "@type": "Organization",
+    "name": "Riza Dev",
+    "logo": {
+      "@type": "ImageObject",
+      "url": "https://riza.netlify.app/favicon.ico"
+    }
+  }
+}
+</script>
+</head>
+
+<body class="" id="top">
+<script>
+    if (localStorage.getItem("pref-theme") === "dark") {
+        document.body.classList.add('dark');
+    } else if (localStorage.getItem("pref-theme") === "light") {
+        document.body.classList.remove('dark')
+    } else if (window.matchMedia('(prefers-color-scheme: dark)').matches) {
+        document.body.classList.add('dark');
+    }
+
+</script>
+
+<header class="header sticky-header">
+    <nav class="nav">
+        <div class="logo">
+            <a href="https://riza.netlify.app/" accesskey="h" title="Riza Dev (Alt + H)">Riza Dev</a>
+            <span class="logo-switches">
+                <button id="theme-toggle" accesskey="t" title="(Alt + T)">
+                    <svg id="moon" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"
+                        fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                        stroke-linejoin="round">
+                        <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+                    </svg>
+                    <svg id="sun" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"
+                        fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                        stroke-linejoin="round">
+                        <circle cx="12" cy="12" r="5"></circle>
+                        <line x1="12" y1="1" x2="12" y2="3"></line>
+                        <line x1="12" y1="21" x2="12" y2="23"></line>
+                        <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+                        <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+                        <line x1="1" y1="12" x2="3" y2="12"></line>
+                        <line x1="21" y1="12" x2="23" y2="12"></line>
+                        <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+                        <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+                    </svg>
+                </button>
+                <ul class="lang-switch"><li>|</li>
+                </ul>
+            </span>
+        </div>
+        <ul id="menu">
+            <li>
+                <a href="https://riza.netlify.app/" title="Home">
+                    <span>Home</span>
+                </a>
+            </li>
+            <li>
+                <a href="https://riza.netlify.app/blog" title="Blog">
+                    <span>Blog</span>
+                </a>
+            </li>
+            <li>
+                <a href="https://riza.netlify.app/search" title="Search (Alt &#43; /)" accesskey=/>
+                    <span>Search</span>
+                </a>
+            </li>
+            <li>
+                <a href="https://riza.netlify.app/tags" title="Tags">
+                    <span>Tags</span>
+                </a>
+            </li>
+        </ul>
+    </nav>
+</header>
+<main class="main">
+
+<article class="post-single">
+  <header class="post-header">
+    <div class="breadcrumbs"><a href="https://riza.netlify.app/">Home</a>&nbsp;»&nbsp;<a href="https://riza.netlify.app/blog/">Blogs</a></div>
+    <h1 class="post-title">
+      [DRAFT] Streamlining Application Infrastructure: A Platform Team&#39;s Approach
+    </h1>
+    <div class="post-meta">
+
+
+July 2024
+
+</div>
+  </header> 
+<figure class="entry-cover"><img loading="lazy" src="https://riza.netlify.app/blog/gitlab-pipeline-infra/cover.png" alt="">
+        
+</figure><div class="toc">
+    <details  open>
+        <summary accesskey="c" title="(Alt + C)">
+            <span class="details">‎ Table of Contents</span>
+        </summary>
+
+        <div class="inner"><ul>
+                <li>
+                    <a href="#introduction" aria-label="Introduction">Introduction</a></li>
+                <li>
+                    <a href="#background" aria-label="Background">Background</a></li>
+                <li>
+                    <a href="#base-infrastructure-components" aria-label="Base Infrastructure Components">Base Infrastructure Components</a></li>
+                <li>
+                    <a href="#the-onboarding-process" aria-label="The Onboarding Process">The Onboarding Process</a><ul>
+                        
+                <li>
+                    <a href="#step-1-user-input" aria-label="Step 1: User Input">Step 1: User Input</a></li>
+                <li>
+                    <a href="#step-2-pipeline-trigger" aria-label="Step 2: Pipeline Trigger">Step 2: Pipeline Trigger</a><ul>
+                        
+                <li>
+                    <a href="#prerequisites" aria-label="Prerequisites">Prerequisites</a></li>
+                <li>
+                    <a href="#triggering-the-pipeline" aria-label="Triggering the Pipeline">Triggering the Pipeline</a></li>
+                <li>
+                    <a href="#passing-user-input" aria-label="Passing User Input">Passing User Input</a></li>
+                <li>
+                    <a href="#pipeline-actions" aria-label="Pipeline Actions">Pipeline Actions</a></li></ul>
+                </li>
+                <li>
+                    <a href="#step-3-automated-resource-creation" aria-label="Step 3: Automated Resource Creation">Step 3: Automated Resource Creation</a>
+                </li>
+            </ul>
+            </li>
+            </ul>
+        </div>
+    </details>
+</div>
+
+  <div class="post-content"><h2 id="introduction">Introduction<a hidden class="anchor" aria-hidden="true" href="#introduction">#</a></h2>
+<p>As a platform team, our goal is to empower developers with easy-to-use tools for creating infrastructure. Our Internal Developer Portal offers a suite of tools to enhance developers&rsquo; daily workflows. In this article, we&rsquo;ll focus on a key feature: onboarding an application with a single click.</p>
+<h2 id="background">Background<a hidden class="anchor" aria-hidden="true" href="#background">#</a></h2>
+<ul>
+<li>Our cloud provider is Google Cloud Platform (GCP)</li>
+<li>We use Terraform for infrastructure configuration</li>
+<li>This article focuses on VM-based applications</li>
+</ul>
+<p>While we won&rsquo;t dive deep into the Terraform details in this article, it&rsquo;s important to note that we create infrastructure by defining Terraform resources.</p>
+<h2 id="base-infrastructure-components">Base Infrastructure Components<a hidden class="anchor" aria-hidden="true" href="#base-infrastructure-components">#</a></h2>
+<p>For each application, we define the following base infrastructure:</p>
+<ol>
+<li>Service Account</li>
+<li>Instance Template</li>
+<li>Instance Group</li>
+<li>Backend Service</li>
+<li>URL Map</li>
+</ol>
+<h2 id="the-onboarding-process">The Onboarding Process<a hidden class="anchor" aria-hidden="true" href="#the-onboarding-process">#</a></h2>
+<h3 id="step-1-user-input">Step 1: User Input<a hidden class="anchor" aria-hidden="true" href="#step-1-user-input">#</a></h3>
+<p>Users begin by filling out a form in our Developer Portal, providing:</p>
+<ul>
+<li>Application name</li>
+<li>Instance template configurations:
+<ul>
+<li>Machine type</li>
+<li>Disk size</li>
+<li>Ubuntu image version</li>
+</ul>
+</li>
+<li>Instance group configurations:
+<ul>
+<li>Maximum replicas</li>
+<li>Minimum replicas</li>
+</ul>
+</li>
+</ul>
+<h3 id="step-2-pipeline-trigger">Step 2: Pipeline Trigger<a hidden class="anchor" aria-hidden="true" href="#step-2-pipeline-trigger">#</a></h3>
+<p>Upon form submission, we trigger a GitLab pipeline using GitLab&rsquo;s trigger API. This process involves the following:</p>
+<h4 id="prerequisites">Prerequisites<a hidden class="anchor" aria-hidden="true" href="#prerequisites">#</a></h4>
+<p>Before triggering the pipeline, we need to generate a trigger token. This can be done using the GitLab API for creating trigger token. For more information, refer to the <a href="https://docs.gitlab.com/ee/api/pipeline_triggers.html#create-a-trigger-token">GitLab documentation on creating trigger tokens</a>.</p>
+<h4 id="triggering-the-pipeline">Triggering the Pipeline<a hidden class="anchor" aria-hidden="true" href="#triggering-the-pipeline">#</a></h4>
+<p>We use a cURL command to trigger the pipeline:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>curl --request POST <span style="color:#ae81ff">\
+</span></span></span><span style="display:flex;"><span><span style="color:#ae81ff"></span><span style="color:#e6db74">&#34;https://gitlab.example.com/api/v4/projects/&lt;project_id&gt;/trigger/pipeline?token=&lt;token&gt;&amp;ref=&lt;ref_name&gt;&#34;</span>
+</span></span></code></pre></div><p>Where:</p>
+<ul>
+<li><code>&lt;token&gt;</code> is your trigger token</li>
+<li><code>&lt;ref_name&gt;</code> is a branch or tag name (e.g., <code>main</code>)</li>
+<li><code>&lt;project_id&gt;</code> is your project ID (e.g., <code>123456</code>), which can be found on the repository page</li>
+</ul>
+<h4 id="passing-user-input">Passing User Input<a hidden class="anchor" aria-hidden="true" href="#passing-user-input">#</a></h4>
+<p>We pass the user-provided values in the request body as a JSON object. Our script later parses this JSON to extract the necessary information.</p>
+<h4 id="pipeline-actions">Pipeline Actions<a hidden class="anchor" aria-hidden="true" href="#pipeline-actions">#</a></h4>
+<p>Once triggered, the pipeline:</p>
+<ol>
+<li>Manages the state of base infrastructure creation</li>
+<li>Raises a Merge Request (MR) to our Infrastructure as Code (IaC) repository</li>
+</ol>
+<h3 id="step-3-automated-resource-creation">Step 3: Automated Resource Creation<a hidden class="anchor" aria-hidden="true" href="#step-3-automated-resource-creation">#</a></h3>
+<p>Our pipeline includes a script that:</p>
+<ol>
+<li>Raises the MR to GitLab</li>
+<li>Creates resources in a defined sequence</li>
+<li>Automates the entire process</li>
+</ol>
+<p>The script creates the resources in sequence, and the entire process is automated within the pipeline.</p>
+<p>DRAFT
+DRAFT
+DRAFT
+DRAFT
+DRAFT
+DRAFT</p>
+
+
+  </div>
+
+  <footer class="post-footer">
+    <ul class="post-tags">
+      <li><a href="https://riza.netlify.app/tags/gitlab/">GitLab</a></li>
+      <li><a href="https://riza.netlify.app/tags/pipeline/">Pipeline</a></li>
+      <li><a href="https://riza.netlify.app/tags/gcp/">GCP</a></li>
+    </ul>
+  </footer>
+</article>
+    </main>
+    
+<footer class="footer">
+    <span>&copy; 2024 <a href="https://riza.netlify.app/">Riza Dev</a></span>
+</footer>
+<a href="#top" aria-label="go to top" title="Go to Top (Alt + G)" class="top-link" id="top-link" accesskey="g">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 12 6" fill="currentColor">
+        <path d="M12 6H0l6-6z" />
+    </svg>
+</a>
+
+<script>
+    let menu = document.getElementById('menu')
+    if (menu) {
+        menu.scrollLeft = localStorage.getItem("menu-scroll-position");
+        menu.onscroll = function () {
+            localStorage.setItem("menu-scroll-position", menu.scrollLeft);
+        }
+    }
+
+    document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+        anchor.addEventListener("click", function (e) {
+            e.preventDefault();
+            var id = this.getAttribute("href").substr(1);
+            if (!window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+                document.querySelector(`[id='${decodeURIComponent(id)}']`).scrollIntoView({
+                    behavior: "smooth"
+                });
+            } else {
+                document.querySelector(`[id='${decodeURIComponent(id)}']`).scrollIntoView();
+            }
+            if (id === "top") {
+                history.replaceState(null, null, " ");
+            } else {
+                history.pushState(null, null, `#${id}`);
+            }
+        });
+    });
+
+</script>
+<script>
+    var mybutton = document.getElementById("top-link");
+    window.onscroll = function () {
+        if (document.body.scrollTop > 800 || document.documentElement.scrollTop > 800) {
+            mybutton.style.visibility = "visible";
+            mybutton.style.opacity = "1";
+        } else {
+            mybutton.style.visibility = "hidden";
+            mybutton.style.opacity = "0";
+        }
+    };
+
+</script>
+<script>
+    document.getElementById("theme-toggle").addEventListener("click", () => {
+        if (document.body.className.includes("dark")) {
+            document.body.classList.remove('dark');
+            localStorage.setItem("pref-theme", 'light');
+        } else {
+            document.body.classList.add('dark');
+            localStorage.setItem("pref-theme", 'dark');
+        }
+    })
+
+</script>
+<script>
+    document.querySelectorAll('pre > code').forEach((codeblock) => {
+        const container = codeblock.parentNode.parentNode;
+
+        const copybutton = document.createElement('button');
+        copybutton.classList.add('copy-code');
+        copybutton.innerHTML = 'copy';
+
+        function copyingDone() {
+            copybutton.innerHTML = 'copied!';
+            setTimeout(() => {
+                copybutton.innerHTML = 'copy';
+            }, 2000);
+        }
+
+        copybutton.addEventListener('click', (cb) => {
+            if ('clipboard' in navigator) {
+                navigator.clipboard.writeText(codeblock.textContent);
+                copyingDone();
+                return;
+            }
+
+            const range = document.createRange();
+            range.selectNodeContents(codeblock);
+            const selection = window.getSelection();
+            selection.removeAllRanges();
+            selection.addRange(range);
+            try {
+                document.execCommand('copy');
+                copyingDone();
+            } catch (e) { };
+            selection.removeRange(range);
+        });
+
+        if (container.classList.contains("highlight")) {
+            container.appendChild(copybutton);
+        } else if (container.parentNode.firstChild == container) {
+            
+        } else if (codeblock.parentNode.parentNode.parentNode.parentNode.parentNode.nodeName == "TABLE") {
+            
+            codeblock.parentNode.parentNode.parentNode.parentNode.parentNode.appendChild(copybutton);
+        } else {
+            
+            codeblock.parentNode.appendChild(copybutton);
+        }
+    });
+</script>
+</body>
+
+</html>

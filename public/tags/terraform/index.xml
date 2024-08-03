@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom" xmlns:content="http://purl.org/rss/1.0/modules/content/">
+  <channel>
+    <title>Terraform on Riza Dev</title>
+    <link>https://riza.netlify.app/tags/terraform/</link>
+    <description>Recent content in Terraform on Riza Dev</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <language>en-us</language><atom:link href="https://riza.netlify.app/tags/terraform/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>[DRAFT] Building a Canary Deployment Infrastructure in GCP</title>
+      <link>https://riza.netlify.app/blog/canary-deployment-gcp/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      
+      <guid>https://riza.netlify.app/blog/canary-deployment-gcp/</guid>
+      <description>Introduction Let&amp;rsquo;s face it, pushing new code to production can be nerve-wracking. One tiny bug and suddenly you&amp;rsquo;re putting out fires instead of sipping your well-earned coffee. That&amp;rsquo;s where canary deployments come in handy. They let you dip your toes in the water before diving in headfirst. In this article, we&amp;rsquo;re going to walk through setting up a canary deployment system on Google Cloud Platform (GCP) using Terraform. We&amp;rsquo;ll be working with regional managed instance groups, load balancers, and some traffic-splitting magic to get a solid canary setup going.</description>
+    </item>
+    
+    <item>
+      <title>[DRAFT] Streamlining Infrastructure as Code with Terraform, Atlantis, and Terragrunt</title>
+      <link>https://riza.netlify.app/blog/iac/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      
+      <guid>https://riza.netlify.app/blog/iac/</guid>
+      <description></description>
+    </item>
+    
+  </channel>
+</rss>
